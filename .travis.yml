@@ -1,0 +1,23 @@
+sudo: required
+services:
+    - docker
+before_install:
+    - docker build -t jackfok95/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run jackfok95/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t jackfok95/multi-client ./client
+    - docker build -t jackfok95/multi-nginx ./nginx
+    - docker build -t jackfok95/multi-server ./server
+    - docker build -t jackfok95/multi-worker ./worker
+    #Log in to the docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # take those image to docker hub
+    - docker push jackfok95/multi-client
+    - docker push jackfok95/multi-nginx
+    - docker push jackfok95/multi-server
+    - docker push jackfok95/multi-worker
+
+
